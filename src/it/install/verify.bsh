@@ -1,0 +1,50 @@
+/*
+ * Copyright 2013 Peter Janes (peterjanes)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+import java.io.File;
+
+File stomp = new File(basedir, "target/npm-cache/stomp");
+if (!stomp.isDirectory()) {
+    throw new Exception("stomp was not cached");
+}
+
+File stompVersion = new File(stomp, "0.0.8");
+if (!stompVersion.isDirectory()) {
+    throw new Exception("wrong version of stomp was cached");
+}
+
+File stompPackage = new File(stompVersion, "package.tgz");
+if (!stompPackage.isFile()) {
+    throw new Exception("stomp package was not cached");
+}
+
+File nodeModules = new File(basedir, "target/classes/node_modules");
+if (!nodeModules.isDirectory()) {
+    throw new Exception("node_modules was not created at " + nodeModules.getAbsolutePath());
+}
+
+File nodeModulesExpress = new File(nodeModules, "express");
+if (!nodeModulesExpress.isDirectory()) {
+    throw new Exception("express was not installed in " + nodeModules.getAbsolutePath());
+}
+
+File nodeModulesBar = new File(nodeModules, "bar");
+if (!nodeModulesBar.isDirectory()) {
+    throw new Exception("bar was not installed in " + nodeModules.getAbsolutePath());
+}
+
+return true;
+
