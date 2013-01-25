@@ -77,7 +77,7 @@ public class NpmPackMojo extends AbstractMojo {
 
         List commandArguments = new ArrayList();
         commandArguments.add("pack");
-        commandArguments.add("commonjs");
+        commandArguments.add("./commonjs");
 
         String[] args = new String[commandArguments.size()];
         for (int i = 0; i < commandArguments.size(); i++) {
