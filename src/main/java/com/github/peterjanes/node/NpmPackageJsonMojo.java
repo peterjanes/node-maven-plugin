@@ -61,6 +61,18 @@ public class NpmPackageJsonMojo extends AbstractNpmMojo {
 
     /**
      *
+     */
+    @Parameter(property = "npm.dependencies")
+    private String npmDependencies;
+
+    /**
+     *
+     */
+    @Parameter(property = "npm.dependencies.test")
+    private String npmTestDependencies;
+
+    /**
+     *
      * @throws MojoExecutionException if anything unexpected happens.
      */
     public void execute() throws MojoExecutionException {
@@ -80,12 +92,13 @@ public class NpmPackageJsonMojo extends AbstractNpmMojo {
 
             List<Artifact> dependencyArtifacts = getNodeArtifacts(ResolutionScope.COMPILE);
             JSONObject dependencies = new JSONObject();
-            // TODO: dependency.getVersion() may (and often will) return a -SNAPSHOT. Figure out
-            // how to open the .tgz and pull in its actual version, or
-            // rewrite the version as a range.
+            // TODO: dependency.getVersion() may (and often will) return a
+            // -SNAPSHOT. Figure out how to open the .tgz and pull in its
+            // actual version, or rewrite the version as a range.
             for (Artifact dependency : dependencyArtifacts) {
                 dependencies.put(dependency.getArtifactId(), dependency.getVersion());
             }
+            addNpmDependencies(dependencies, npmDependencies);
             packageJson.put("dependencies", dependencies);
 
             List<Artifact> devDependencyArtifacts = getNodeArtifacts(ResolutionScope.TEST);
@@ -93,6 +106,7 @@ public class NpmPackageJsonMojo extends AbstractNpmMojo {
             for (Artifact devDependency : devDependencyArtifacts) {
                 devDependencies.put(devDependency.getArtifactId(), devDependency.getVersion());
             }
+            addNpmDependencies(devDependencies, npmTestDependencies);
             packageJson.put("devDependencies", devDependencies);
 
             JSONObject scripts = new JSONObject();
@@ -106,6 +120,28 @@ public class NpmPackageJsonMojo extends AbstractNpmMojo {
             w.close();
         } catch (IOException e) {
             throw new MojoExecutionException("Could not write package.json to " + packageJsonFile.getAbsolutePath(), e);
+        }
+    }
+
+    private void addNpmDependencies(JSONObject dependencies, String npmDependencies) {
+        if (null != npmDependencies) {
+            String[] packages = npmDependencies.split(",");
+            for (String pkg : packages) {
+                String[] parsed = pkg.split("@");
+                if (parsed.length == 2) {
+                    if (parsed[1].startsWith("[")) {
+                        getLog().warn("Version range found, ignoring " + pkg);
+                    } else {
+                        dependencies.put(parsed[0], parsed[1]);
+                    }
+                } else {
+                    // TODO: get most recent version for pkg (npm view)
+                    // 'dist-tags': { latest: '0.5.1', stable: '0.1.0' },
+                    // TODO: get version from .tgz installs (no npm command,
+                    // extract and use package/package.json)
+                    getLog().warn("Version not found, ignoring " + pkg);
+                }
+            }
         }
     }
 }
